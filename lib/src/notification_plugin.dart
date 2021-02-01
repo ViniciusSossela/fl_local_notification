@@ -1,10 +1,17 @@
 import 'package:fl_local_notification/src/character.dart';
 import 'package:fl_local_notification/src/extensions.dart';
+import 'package:fl_local_notification/src/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+final didReceiveLocalNotificationSubject =
+    BehaviorSubject<ReceivedNotification>();
+
+final selectNotificationSubject = BehaviorSubject<String>();
 
 class LocalNotification {
   static final LocalNotification _singleton = LocalNotification._internal();
@@ -16,6 +23,39 @@ class LocalNotification {
   LocalNotification._internal();
 
   factory LocalNotification() => _singleton;
+
+  void initialize() async {
+    await configureLocalTimeZone();
+    _initializeLocalNotificationPlugin();
+  }
+
+  Future<void> _initializeLocalNotificationPlugin() async {
+    final androidSettings = AndroidInitializationSettings('ic_notification');
+
+    final iOSSettings = IOSInitializationSettings(onDidReceiveLocalNotification:
+        (int id, String title, String body, String payload) async {
+      didReceiveLocalNotificationSubject.add(ReceivedNotification(
+          id: id, title: title, body: body, payload: payload));
+    });
+
+    final initializationSettings =
+        InitializationSettings(android: androidSettings, iOS: iOSSettings);
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: (String payload) async {
+      if (payload != null) {
+        debugPrint('notification payload: $payload');
+      }
+      selectNotificationSubject.add(payload);
+    });
+  }
+
+  void requestiOSPermissions() async {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+  }
 
   Future<void> _scheduleNotification({
     @required int id,
