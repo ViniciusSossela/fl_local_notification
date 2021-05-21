@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -25,8 +26,10 @@ class LocalNotification {
   factory LocalNotification() => _singleton;
 
   void initialize() async {
-    await configureLocalTimeZone();
-    _initializeLocalNotificationPlugin();
+    if (!kIsWeb) {
+      await configureLocalTimeZone();
+      _initializeLocalNotificationPlugin();
+    }
   }
 
   Future<void> _initializeLocalNotificationPlugin() async {
@@ -51,10 +54,12 @@ class LocalNotification {
   }
 
   void requestiOSPermissions() async {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(alert: true, badge: true, sound: true);
+    if (!kIsWeb) {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+    }
   }
 
   Future<void> _scheduleNotification({
@@ -82,27 +87,31 @@ class LocalNotification {
       @required DateTime schedule,
       @required String title,
       @required String body}) async {
-    assert(id != null && schedule != null && title != null && body != null);
+    if (!kIsWeb) {
+      assert(id != null && schedule != null && title != null && body != null);
 
-    const platformChannelSpecifics =
-        NotificationDetails(android: _androidNotificationDetails);
+      const platformChannelSpecifics =
+          NotificationDetails(android: _androidNotificationDetails);
 
-    if (schedule.isSameDate(DateTime.now())) {
-      await flutterLocalNotificationsPlugin.show(
-          Character.getInteger(id), title, body, platformChannelSpecifics);
-    } else {
-      if (schedule.isAfter(DateTime.now())) {
-        await _scheduleNotification(
-            id: Character.getInteger(id),
-            schedule: schedule.setToSixHours,
-            title: title,
-            body: body);
+      if (schedule.isSameDate(DateTime.now())) {
+        await flutterLocalNotificationsPlugin.show(
+            Character.getInteger(id), title, body, platformChannelSpecifics);
+      } else {
+        if (schedule.isAfter(DateTime.now())) {
+          await _scheduleNotification(
+              id: Character.getInteger(id),
+              schedule: schedule.setToSixHours,
+              title: title,
+              body: body);
+        }
       }
     }
   }
 
   Future<void> cancelNotification(String id) async {
-    assert(id != null);
-    await flutterLocalNotificationsPlugin.cancel(Character.getInteger(id));
+    if (!kIsWeb) {
+      assert(id != null);
+      await flutterLocalNotificationsPlugin.cancel(Character.getInteger(id));
+    }
   }
 }
