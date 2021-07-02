@@ -1,5 +1,5 @@
 extension MonetaryParsing on String {
-  double fromMonetaryToDouble() {
+  double? fromMonetaryToDouble() {
     return double.tryParse(replaceAll('.', '').replaceAll(',', '.'));
   }
 

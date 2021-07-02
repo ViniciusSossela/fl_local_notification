@@ -12,7 +12,7 @@ final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 final didReceiveLocalNotificationSubject =
     BehaviorSubject<ReceivedNotification>();
 
-final selectNotificationSubject = BehaviorSubject<String>();
+final selectNotificationSubject = BehaviorSubject<String?>();
 
 class LocalNotification {
   static final LocalNotification _singleton = LocalNotification._internal();
@@ -36,7 +36,7 @@ class LocalNotification {
     final androidSettings = AndroidInitializationSettings('ic_notification');
 
     final iOSSettings = IOSInitializationSettings(onDidReceiveLocalNotification:
-        (int id, String title, String body, String payload) async {
+        (int id, String? title, String? body, String? payload) async {
       didReceiveLocalNotificationSubject.add(ReceivedNotification(
           id: id, title: title, body: body, payload: payload));
     });
@@ -45,7 +45,7 @@ class LocalNotification {
         InitializationSettings(android: androidSettings, iOS: iOSSettings);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String payload) async {
+        onSelectNotification: (String? payload) async {
       if (payload != null) {
         debugPrint('notification payload: $payload');
       }
@@ -63,10 +63,10 @@ class LocalNotification {
   }
 
   Future<void> _scheduleNotification({
-    @required int id,
-    @required DateTime schedule,
-    @required String title,
-    @required String body,
+    required int id,
+    required DateTime schedule,
+    required String title,
+    required String body,
   }) async {
     assert(id != null && schedule != null && title != null && body != null);
 
@@ -83,10 +83,10 @@ class LocalNotification {
   }
 
   Future<void> addNotification(
-      {@required String id,
-      @required DateTime schedule,
-      @required String title,
-      @required String body}) async {
+      {required String id,
+      required DateTime schedule,
+      required String title,
+      required String body}) async {
     if (!kIsWeb) {
       assert(id != null && schedule != null && title != null && body != null);
 

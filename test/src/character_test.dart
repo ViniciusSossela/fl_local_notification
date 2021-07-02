@@ -25,7 +25,7 @@ void main() {
     expect(id4 != id5, true);
   });
   test('generate int from null string', () async {
-    expect(() => Character.getInteger(null), throwsAssertionError);
+    expect(() => Character.getInteger(''), throwsAssertionError);
   });
   test('generate int from empty string', () async {
     expect(() => Character.getInteger(''), throwsAssertionError);
