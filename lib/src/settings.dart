@@ -6,8 +6,7 @@ const platform = MethodChannel('notification.dev/flutter_local_notifications');
 
 Future<void> configureLocalTimeZone() async {
   tz.initializeTimeZones();
-  final String timeZoneName =
-      await (platform.invokeMethod('getTimeZoneName') as Future<String>);
+  final String timeZoneName = await platform.invokeMethod('getTimeZoneName');
   tz.setLocalLocation(tz.getLocation(timeZoneName));
 }
 
