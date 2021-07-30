@@ -25,15 +25,16 @@ class LocalNotification {
 
   factory LocalNotification() => _singleton;
 
-  void initialize() async {
+  void initialize({String iconNotification = 'ic_notification'}) async {
     if (!kIsWeb) {
       await configureLocalTimeZone();
-      _initializeLocalNotificationPlugin();
+      _initializeLocalNotificationPlugin(iconNotification);
     }
   }
 
-  Future<void> _initializeLocalNotificationPlugin() async {
-    final androidSettings = AndroidInitializationSettings('ic_notification');
+  Future<void> _initializeLocalNotificationPlugin(
+      String iconNotification) async {
+    final androidSettings = AndroidInitializationSettings(iconNotification);
 
     final iOSSettings = IOSInitializationSettings(onDidReceiveLocalNotification:
         (int id, String? title, String? body, String? payload) async {
@@ -68,8 +69,6 @@ class LocalNotification {
     required String title,
     required String body,
   }) async {
-    assert(id != null && schedule != null && title != null && body != null);
-
     final howLongFromNow = DateTime.now().difference(schedule).abs();
     await flutterLocalNotificationsPlugin.zonedSchedule(
         id,
@@ -88,18 +87,18 @@ class LocalNotification {
       required String title,
       required String body}) async {
     if (!kIsWeb) {
-      assert(id != null && schedule != null && title != null && body != null);
-
       const platformChannelSpecifics =
           NotificationDetails(android: _androidNotificationDetails);
 
+      final notificationId = Character.getInteger(id);
+
       if (schedule.isSameDate(DateTime.now())) {
         await flutterLocalNotificationsPlugin.show(
-            Character.getInteger(id), title, body, platformChannelSpecifics);
+            notificationId, title, body, platformChannelSpecifics);
       } else {
         if (schedule.isAfter(DateTime.now())) {
           await _scheduleNotification(
-              id: Character.getInteger(id),
+              id: notificationId,
               schedule: schedule.setToSixHours,
               title: title,
               body: body);
@@ -110,7 +109,6 @@ class LocalNotification {
 
   Future<void> cancelNotification(String id) async {
     if (!kIsWeb) {
-      assert(id != null);
       await flutterLocalNotificationsPlugin.cancel(Character.getInteger(id));
     }
   }
