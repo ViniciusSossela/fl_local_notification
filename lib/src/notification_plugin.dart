@@ -18,7 +18,7 @@ class LocalNotification {
   static final LocalNotification _singleton = LocalNotification._internal();
 
   static const _androidNotificationDetails = AndroidNotificationDetails(
-      'channel_id', 'channel_name', 'channel_desc',
+      'channel_id', 'channel_name',
       importance: Importance.max, priority: Priority.high, ticker: 'ticker');
 
   LocalNotification._internal();
@@ -36,8 +36,9 @@ class LocalNotification {
       String iconNotification) async {
     final androidSettings = AndroidInitializationSettings(iconNotification);
 
-    final iOSSettings = IOSInitializationSettings(onDidReceiveLocalNotification:
-        (int id, String? title, String? body, String? payload) async {
+    final iOSSettings = DarwinInitializationSettings(
+        onDidReceiveLocalNotification:
+            (int id, String? title, String? body, String? payload) async {
       didReceiveLocalNotificationSubject.add(ReceivedNotification(
           id: id, title: title, body: body, payload: payload));
     });
@@ -46,11 +47,10 @@ class LocalNotification {
         InitializationSettings(android: androidSettings, iOS: iOSSettings);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String? payload) async {
-      if (payload != null) {
-        debugPrint('notification payload: $payload');
-      }
-      selectNotificationSubject.add(payload);
+        onDidReceiveNotificationResponse: (notificationResponse) async {
+      debugPrint('notification payload: ${notificationResponse.payload}');
+
+      selectNotificationSubject.add(notificationResponse.payload);
     });
   }
 

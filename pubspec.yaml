@@ -4,13 +4,13 @@ version: 0.1.0
 homepage:
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^8.0.0
+  flutter_local_notifications: ^13.0.0
   rxdart: ^0.27.1
 
 dev_dependencies:
